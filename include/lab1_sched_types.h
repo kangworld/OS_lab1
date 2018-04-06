@@ -37,7 +37,8 @@ typedef struct queue{
 
 void initQueue(Queue *queue); // 큐 초기화
 bool isEmpty(Queue *queue); // 큐 공백 확인
-void enQueue(Queue *queue, Process *process); // 큐에 프로세스 삽입
+void enQueueFront(Queue *queue, Process *process); // 큐 front에 프로세스 삽입
+void enQueueRear(Queue *queue, Process *process); // 큐 rear에 프러세스 삽입
 Process * deQueue(Queue *queue); // 큐에서 프로세스 삭제
 
 void firstInFirstOut(void);

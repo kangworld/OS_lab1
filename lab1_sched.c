@@ -44,7 +44,7 @@ bool isEmpty(Queue *queue){
 	}
 }
 
-void enQueue(Queue *queue, Process *process){
+void enQueueRear(Queue *queue, Process *process){
 	Node *newNode = (Node *)malloc(sizeof(Node));
 	newNode->process = process;
 	newNode->next = NULL;
@@ -55,6 +55,20 @@ void enQueue(Queue *queue, Process *process){
 		queue->rear->next = newNode;
 	}
 	queue->rear = newNode;
+	queue->count++;
+}
+
+void enQueueFront(Queue *queue, Process *process){
+	Node *newNode = (Node *)malloc(sizeof(Node));
+	newNode->process = process;
+	newNode->next = NULL;
+
+	if(isEmpty(queue)){
+		queue->front = newNode;
+	}else{
+		newNode->next = queue->front;
+		queue->front = newNode;
+	}
 	queue->count++;
 }
 
