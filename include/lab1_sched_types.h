@@ -19,9 +19,12 @@
  */
 
 typedef struct process{
-	char name[10]; // 프로세스 이름
+	int processId;//고유번호
 	int arriveTime; // 프로세스 도착 시간
 	int serviceTime; // 프로세스 수행 시간
+	int currentServiceTime; //current service time
+	int runFlag;	//수행중
+	int ticket;	//for rottery scheduler
 }Process;
 
 typedef struct node{
@@ -39,7 +42,15 @@ void initQueue(Queue *queue); // 큐 초기화
 bool isEmpty(Queue *queue); // 큐 공백 확인
 void enQueueFront(Queue *queue, Process *process); // 큐 front에 프로세스 삽입
 void enQueueRear(Queue *queue, Process *process); // 큐 rear에 프러세스 삽입
+void enQueueInSJF(Queue *queue, Process *process); //SJF에서 큐 삽입
 Process * deQueue(Queue *queue); // 큐에서 프로세스 삭제
+ 
 
 void firstInFirstOut(void);
+void SJF(Process *processSet, int processCount, int totalServiceTime, bool **workload);
+void RR(Process *processSet);
+void Lottery(Process *processSet);
+
+bool ** createWorkLoad(int processCount, int totalRunningTime, bool **workLoad);
+void showWorkLoad(int processCount, int totalRunningTime, bool **workLoad);
 #endif /* LAB1_HEADER_H*/
