@@ -13,6 +13,7 @@
 #include <aio.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <time.h>
@@ -33,7 +34,7 @@
  *
  */
 
-enum scheduler { FIFO = 1, SJF, RR, MLFQ, LOTTERY, QUIT };
+enum scheduler { FIFO = 1, SPN, RRs, MLFQ, LOTTERY, QUIT };
 
 int main(int argc, char *argv[]){
 	bool **workLoad = NULL;
@@ -42,11 +43,11 @@ int main(int argc, char *argv[]){
 	int selectMenu;
 	Process processSet[PROCESS_COUNT] = {
 		//도착시작, 총 수행시간, 현재 수행시간, 축적시간, 프로세스 아이디
-		{ 0, 3, 0, 0 ,0 },
-		{ 2, 6, 0, 0, 1 },
-		{ 4, 4, 0, 0, 2 },
-		{ 6, 5, 0, 0, 3 },
-		{ 8, 2, 0, 0, 4 },
+		{ 0, 3, 0, 0 ,0, 0 },
+		{ 2, 6, 0, 0, 1, 0 },
+		{ 4, 4, 0, 0, 2, 0 },
+		{ 6, 5, 0, 0, 3, 0 },
+		{ 8, 2, 0, 0, 4, 0 },
 	};
 
 	for(int i = 0; i < 5; i++){
@@ -65,9 +66,11 @@ int main(int argc, char *argv[]){
 				firstInFirstOut(processSet, workLoad, totalServiceTime);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
-			case SJF :
+			case SPN :
+				SJF(processSet, totalServiceTime, workLoad);
+				showWorkLoad(totalServiceTime, workLoad);
 				break;
-			case RR :
+			case RRs :
 				break;
 			case MLFQ :
 				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 1);

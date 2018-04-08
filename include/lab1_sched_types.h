@@ -26,6 +26,7 @@ typedef struct process{
 	int currentServiceTime; // 실제 프로세스 수행 시간
 	int accumulatedTime; // MLFQ에 사용될 누적시간
 	int processId;
+	int ticket;	//for rottery scheduler
 }Process;
 
 typedef struct node{
@@ -44,7 +45,9 @@ void initQueue(Queue *queue); // 큐 초기화
 bool isEmpty(Queue *queue); // 큐 공백 확인
 void enQueueFront(Queue *queue, Process *process); // 큐 front에 프로세스 삽입
 void enQueueRear(Queue *queue, Process *process); // 큐 rear에 프러세스 삽입
+void enQueueInSJF(Queue *queue, Process *process); //SJF에서 큐 삽입
 Process * deQueue(Queue *queue); // 큐에서 프로세스 삭제
+ 
 
 void firstInFirstOut(Process *process, bool **workLoad, int totalServiceTime); // FIFO 스케쥴러 함수
 void multilevelFeedbackQueue(Process *process, bool **workLoad, int totalServiceTime, int timeSlice);
@@ -52,4 +55,8 @@ void showWorkLoad(int totalRunningTime, bool **workLoad); // workLoad 출력함�
 bool ** createWorkLoad(int totalRunningTime, bool **workLoad); 
 void showMenu(void);
 void initComponent(Process *processSet, bool **workLoad, int totalServiceTime);
+void SJF(Process *processSet, int totalServiceTime, bool **workload);
+void RR(Process *processSet);
+void Lottery(Process *processSet);
+
 #endif /* LAB1_HEADER_H*/
