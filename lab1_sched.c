@@ -277,7 +277,7 @@ void SJF(Process *processSet, int totalServiceTime, bool **workload){
 
 	initQue(&ReadyQ);
 	
-	for(int time = 0;time<=totalServiceTime;time++){
+	for(int time = 0;time<totalServiceTime;time++){
 		for(;index<PROCESS_COUNT;index++){ //도착시 readyQ에 삽입
 			if(processSet[index].arriveTime <= time){
 				enQueueInSJF(&ReadyQ, &processSet[index]);
@@ -295,10 +295,102 @@ void SJF(Process *processSet, int totalServiceTime, bool **workload){
 		
 }
 
-void RR(Process *processSet){
+void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlice){
+	Queue ReadyQ;
+	int index=0;
+	int run=0; //timeslice 체크를 위한 변수
+	Process *RunProc=NULL;
+	
+	initQue(&ReadyQ);
 
+	for(int time=0;time<totalServiceTime;time++){
+		for(;index<PROCESS_COUNT;index++){ //arriveTime에 맞추어 큐에 삽입
+			if(processSet[index].arriveTime == time){
+				enQueueFront(&ReadyQ, &processSet[index]);
+			}else break;
+		}
+
+		if(!isEmpty(&ReadyQ)){ //ReadyQ에 따라 실행
+			RunProc = ReadyQ.front->process;
+			(RunProc->currentServiceTime)++;
+			workload[RunProc->processId][time] = true;
+			run++;
+			if(RunProc->currentServiceTime < RunProc->serviceTime){ //수행이 덜 
+				RunProc = NULL;
+				if(run == timeSlice){ //timeSlice까지 실행
+					run = 0;
+					RunProc = deQueue(&ReadyQ);
+					enQueueRear(&ReadyQ, RunProc);
+				}
+			}else{ //수행완료
+				run = 0;
+				deQueue(&ReadyQ);
+			}
+
+		}
+	}
 }
 
-void Lottery(Process *processSet){
+void Lottery(Process *processSet, int totalServiceTime, bool **workload){
+	Queue ReadyQ;
+	int index = 0;
+	int totalTicket = 0;
+	int lotteryNum;
+	int search;
+	Process *forSearch;
+	Node *pa;
+	Node *ch;
+
+	srand(time(NULL)); //seed값 사용
+
+	initQue(&ReadyQ);
+
+	for(int time=0;time<totalServiceTime;time++){
+		for(;index<PROCESS_COUNT;index++){ //arrive time에 맞추어 큐에 삽입
+			if(processSet[index].arriveTime == time){
+				enQueueRear(&ReadyQ, &processSet[index]);
+				totalTicket += processSet[index].ticket;
+			}else break;
+		}
+
+		if(!isEmpty(&ReadyQ)){
+			lotteryNum = rand()%totalTicket;
+			forSearch = ReadyQ.front->process;
+			search = 0;
+			pa = NULL;
+			ch = ReadyQ.front;
+			for(int i = 0; i<ReadyQ.count;i++){ //어느 노드인지 탐색
+				search += forSearch->ticket;
+				if(search > lotteryNum){ //찾았을 경우
+					forSearch->currentServiceTime++;
+					workload[forSearch->processId][time]=true;
+
+					if(forSearch->currentServiceTime == forSearch->serviceTime){//수행완료시
+						totalTicket -= forSearch->ticket;
+						deQueueInLottery(&ReadyQ, pa, ch);
+					}
+					break;
+				}
+				pa = ch;
+				ch = ch->next;
+				forSearch = ch->process;
+			}
+		}
+	}
+}
+
+void * deQueueInLottery(Queue *queue, Node *pa, Node *ch){
+	if(!pa){
+		queue->front = ch->next;
+		free(ch);
+	}else if(!(ch->next)){
+		queue->rear = pa;
+		pa->next = NULL;
+		free(ch);
+	}else{
+		pa->next = ch->next;
+		free(ch);
+	}
+	queue->count--;
 
 }

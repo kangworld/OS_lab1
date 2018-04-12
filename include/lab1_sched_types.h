@@ -47,6 +47,7 @@ void enQueueFront(Queue *queue, Process *process); // 큐 front에 프로세스 
 void enQueueRear(Queue *queue, Process *process); // 큐 rear에 프러세스 삽입
 void enQueueInSJF(Queue *queue, Process *process); //SJF에서 큐 삽입
 Process * deQueue(Queue *queue); // 큐에서 프로세스 삭제
+void * deQueueInLottery(Queue *queue, Node *pa, Node *ch); //Lottery의 큐에서 프로세스 삭제
  
 
 void firstInFirstOut(Process *process, bool **workLoad, int totalServiceTime); // FIFO 스케쥴러 함수
@@ -56,7 +57,7 @@ bool ** createWorkLoad(int totalRunningTime, bool **workLoad);
 void showMenu(void);
 void initComponent(Process *processSet, bool **workLoad, int totalServiceTime);
 void SJF(Process *processSet, int totalServiceTime, bool **workload);
-void RR(Process *processSet);
-void Lottery(Process *processSet);
+void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlice);
+void Lottery(Process *processSet, int totalServiceTime, bool **workload);
 
 #endif /* LAB1_HEADER_H*/

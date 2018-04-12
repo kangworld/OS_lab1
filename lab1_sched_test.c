@@ -42,12 +42,12 @@ int main(int argc, char *argv[]){
 	int totalServiceTime = 0;
 	int selectMenu;
 	Process processSet[PROCESS_COUNT] = {
-		//도착시작, 총 수행시간, 현재 수행시간, 축적시간, 프로세스 아이디
-		{ 0, 3, 0, 0 ,0, 0 },
-		{ 2, 6, 0, 0, 1, 0 },
-		{ 4, 4, 0, 0, 2, 0 },
-		{ 6, 5, 0, 0, 3, 0 },
-		{ 8, 2, 0, 0, 4, 0 },
+		//도착시작, 총 수행시간, 현재 수행시간, 축적시간, 프로세스 아이디, 티켓
+		{ 0, 3, 0, 0 ,0, 10 },
+		{ 2, 6, 0, 0, 1, 30 },
+		{ 4, 4, 0, 0, 2, 20 },
+		{ 6, 5, 0, 0, 3, 50 },
+		{ 8, 2, 0, 0, 4, 70 },
 	};
 
 	for(int i = 0; i < 5; i++){
@@ -71,11 +71,15 @@ int main(int argc, char *argv[]){
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case RRs :
+				RR(processSet, totalServiceTime, workLoad, 2);
+				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case MLFQ :
 				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 1);
 				showWorkLoad(totalServiceTime, workLoad);
 			case LOTTERY :
+				Lottery(processSet, totalServiceTime, workLoad);
+				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case QUIT :
 				flag = false;
