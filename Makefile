@@ -25,10 +25,9 @@ TARGET_LAB1 = lab1_sched
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(TARGET_LAB1) : $(OBJS_LAB1)
-	$(CC) -o $(TARGET_LAB1) $(OBJS_LAB1)
+	$(CC) -o $(TARGET_LAB1) $(OBJS_LAB1) -lm
 
 all : $(TARGET_LAB1)
-
 dep : 
 	gccmaedep $(INC) $(SRCS)
 

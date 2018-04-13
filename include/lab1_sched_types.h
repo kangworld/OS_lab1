@@ -1,8 +1,8 @@
 /*
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
-*	    Student id : 32140033
-*	    Student name : 강민구
+*	    Student id : 32140033 32163322
+*	    Student name : 강민구   이승현
 *
 *   lab1_sched_types.h :
 *       - lab1 header file.
@@ -25,7 +25,8 @@ typedef struct process{
 	int serviceTime; // 프로세스 요구 수행 시간
 	int currentServiceTime; // 실제 프로세스 수행 시간
 	int accumulatedTime; // MLFQ에 사용될 누적시간
-	int processId;
+	int processId; // processId
+//	int priority; //MLFQ에서 큐 우선순위에 사용할 변수
 	int ticket;	//for rottery scheduler
 }Process;
 
@@ -38,7 +39,8 @@ typedef struct queue{
 	Node *front; // 맨 앞(프로세스 꺼낼 위치)
 	Node *rear; // 맨 뒤(보관할 위치)
 	int count; // 보관 개수
-	int priority;
+	int timeSlice; //MLFQ에서 큐의 타임슬라이스
+	int priority; // MLFQ에서 큐의 우선순위
 }Queue;
 
 void initQueue(Queue *queue); // 큐 초기화
@@ -51,7 +53,7 @@ void * deQueueInLottery(Queue *queue, Node *pa, Node *ch); //Lottery의 큐에�
  
 
 void firstInFirstOut(Process *process, bool **workLoad, int totalServiceTime); // FIFO 스케쥴러 함수
-void multilevelFeedbackQueue(Process *process, bool **workLoad, int totalServiceTime, int timeSlice);
+void multilevelFeedbackQueue(Process *process, bool **workLoad, int totalServiceTime, int timeSlice, bool exp);
 void showWorkLoad(int totalRunningTime, bool **workLoad); // workLoad 출력함수
 bool ** createWorkLoad(int totalRunningTime, bool **workLoad); 
 void showMenu(void);

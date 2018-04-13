@@ -1,8 +1,8 @@
 /*
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
-*	    Student id : 
-*	    Student name : 
+*	    Student id : 32140033 32163322
+*	    Student name : 강민구   이승현
 *
 *   lab1_sched.c :
 *       - Lab1 source file.
@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <math.h>
 #include <time.h>
 #include <sys/time.h>
 #include <string.h>
@@ -75,8 +76,9 @@ int main(int argc, char *argv[]){
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case MLFQ :
-				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 1);
+				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 2, true);
 				showWorkLoad(totalServiceTime, workLoad);
+				break;
 			case LOTTERY :
 				Lottery(processSet, totalServiceTime, workLoad);
 				showWorkLoad(totalServiceTime, workLoad);

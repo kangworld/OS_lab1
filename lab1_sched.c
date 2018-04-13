@@ -1,8 +1,8 @@
 /*
 *	DKU Operating System Lab
 *	    Lab1 (Scheduler Algorithm Simulator)
-*	    Student id : 32140033
-*	    Student name : 강민구
+*	    Student id : 32140033, 32163322
+*	    Student name : 강민구,   이승현
 *
 *   lab1_sched.c :
 *       - Lab1 source file.
@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <time.h>
@@ -36,6 +37,16 @@ void initQue(Queue *queue){
 	queue->count = 0;
 }
 
+/*
+ * MLFQ에서 Queue의 timeSlice를 설정하는 함수
+ */
+void setQueueTimeSlice(Queue *queue, int timeSlice){
+	queue -> timeSlice = timeSlice;
+}
+
+/*
+ * 큐의 공백을 검사하는 함수
+ */
 bool isEmpty(Queue *queue){
 	if(queue->count == 0){
 		return true; //공백이면 true
@@ -45,7 +56,7 @@ bool isEmpty(Queue *queue){
 }
 
 /*
-   MLFQ에서 모든 큐가 공백인지 검사하는 함수
+ * MLFQ에서 모든 큐가 공백인지 검사하는 함수
  */
 bool isAllEmpty(Queue *multiQueue, int queueLevel){
 	for(int i = 0; i < queueLevel; i++){
@@ -56,6 +67,9 @@ bool isAllEmpty(Queue *multiQueue, int queueLevel){
 	return true;
 }
 
+/*
+ * 큐의 rear에 노드를 삽입하는 함수
+ */
 void enQueueRear(Queue *queue, Process *process){
 	Node *newNode = (Node *)malloc(sizeof(Node));
 	newNode->process = process;
@@ -106,6 +120,9 @@ void enQueueInSJF(Queue *queue, Process *process){
 	queue->count++;
 }
 
+/*
+ * 큐의 head에 노드를 삽입하는 함수
+ */
 void enQueueFront(Queue *queue, Process *process){
 	Node *newNode = (Node *)malloc(sizeof(Node));
 	newNode->process = process;
@@ -120,6 +137,9 @@ void enQueueFront(Queue *queue, Process *process){
 	queue->count++;
 }
 
+/*
+ * 큐의 head 노드를 삭제하는 함수
+ */
 Process * deQueue(Queue *queue){
 	Process *delProc;
 	Node *curNode;
@@ -136,13 +156,34 @@ Process * deQueue(Queue *queue){
 	}
 }
 
+void * deQueueInLottery(Queue *queue, Node *pa, Node *ch){
+	if(!pa){
+		queue->front = ch->next;
+		free(ch);
+	}else if(!(ch->next)){
+		queue->rear = pa;
+		pa->next = NULL;
+		free(ch);
+	}else{
+		pa->next = ch->next;
+		free(ch);
+	}
+	queue->count--;
+
+}
+
+/*
+ * FIFO
+ * processSet : 스케쥴링의 대상이 되는 프로세스 집합
+ * workLoad : 프로세스들의 수행결과를 저장할 워크로드
+ * totalRunningTime : 대기중인 프로세스들의 총 수행시간
+ */
 void firstInFirstOut(Process *processSet, bool **workLoad, int totalRunningTime){
 	Queue readyQue;
 	int timer = 0;
 	int processIndex = 0;
 	Process *runningProcess = NULL;
 	initQue(&readyQue);
-	//workLoad = initWorkLoad(processCount, totalRunningTime, workLoad);
 
 	for(; timer < totalRunningTime; timer++){
 		while(processSet[processIndex].arriveTime == timer){
@@ -160,20 +201,31 @@ void firstInFirstOut(Process *processSet, bool **workLoad, int totalRunningTime)
 	}
 }
 
-void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunningTime, int timeSlice){
+/*
+ * MLFQ
+ * processSet : 스케쥴링의 대상이 되는 프로세스 집합
+ * workLoad : 프로세스들의 수행결과를 저장할 워크로드
+ * totalRunningTime : 대기중인 프로세스들의 총 수행시간
+ * timeSlice : 작업 할당량
+ * exp : 큐의 우선순위가 낮아질수록  timeSlice를 제곱함 
+ */
+void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunningTime, int timeSlice, bool exp){
 	Queue multiQueue[4];
 	int timer = 0;
+	int expedNumber = timeSlice;
 	int processIndex = 0;
 	int queueLevel = 4;
 	int processPriority = 0;
-
 	Process *runningProcess = NULL;
 
 	for(int i = 0; i < queueLevel; i++){
 		initQue(&multiQueue[i]);
 		multiQueue[i].priority = i;
+		if(exp == true){
+			timeSlice = pow(expedNumber, i);
+		}
+		multiQueue[i].timeSlice = timeSlice;
 	}
-//	workLoad = initWorkLoad(processCount, totalRunningTime, workLoad);
 
 	for(; timer < totalRunningTime;){
 		
@@ -184,7 +236,8 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 		if(runningProcess == NULL){ //작업중인 큐가 없으면 큐에 새로운 잡을 넣어줌
 			for(int i = 0; i < queueLevel; i++){
 				runningProcess = deQueue(&multiQueue[i]); // 우선순위가 높은 큐에 있는 잡부터 수행프로세스에 삽입
-				processPriority = i;
+			
+				processPriority  = i;
 				if(runningProcess != NULL){ // 러닝프로세스에 들오면 더이상 큐에서 프로세스를 빼지 않음
 					break;
 				}
@@ -197,74 +250,18 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 		
 		if(runningProcess -> currentServiceTime == runningProcess -> serviceTime){
 			runningProcess = NULL; //프로세스 종료
-		}else if(runningProcess -> accumulatedTime == timeSlice){ //아직 수행할 시간이 더 남았음
-			if(processPriority == (queueLevel - 1)){ 
-				processPriority--;
-			}
-
-			if(processSet[processIndex].arriveTime == timer + 1 || !isAllEmpty(multiQueue, queueLevel)){
-				if(processPriority != (queueLevel - 1)){
-					processPriority++;
+		}else if(runningProcess -> accumulatedTime == multiQueue[processPriority].timeSlice){ //아직 수행할 시간이 더 남았음
+			if(isAllEmpty(multiQueue, queueLevel) == false){
+				if( processPriority   != (queueLevel - 1)){
+					printf("gi\n");		
+					processPriority ++;
+					printf("id : %d rpit : %d\n", runningProcess->processId, processPriority );
 				}
-				enQueueRear(&multiQueue[processPriority], runningProcess);
-			}else{
-				enQueueRear(&multiQueue[processPriority], runningProcess);
 			}
+			enQueueRear(&multiQueue[processPriority], runningProcess);
+			
 			runningProcess -> accumulatedTime = 0;
 			runningProcess = NULL;
-		}
-	}
-}
-
-bool ** createWorkLoad(int totalRunningTime, bool **workLoad){
-	workLoad = (bool**) malloc (sizeof(bool*) * PROCESS_COUNT);
-    for(int i = 0; i < PROCESS_COUNT; i++){
-         workLoad[i] = (bool*) malloc (sizeof(bool) * totalRunningTime);
-         for(int j = 0; j < totalRunningTime; j++){
-			 workLoad[i][j] = false;
-		 }
-    }
-	return workLoad;
-}
-
-void showWorkLoad(int totalRunningTime, bool **workLoad){
-	char processName[PROCESS_COUNT] = {'A', 'B', 'C', 'D', 'E'};
-
-	for(int i = 0; i < PROCESS_COUNT; i++){
-		printf("%c :", processName[i]);
-		for(int j =0; j < totalRunningTime; j++){
-			if(workLoad[i][j] == true){
-				printf(" ■ ");
-			}else{
-				printf(" □ ");
-			}
-		}
-		printf("\n");
-	}
-}
-
-void showMenu(void){
-	printf("-------------------------------------\n");
-	printf("1. First come first serve\n");
-	printf("2. Shortest job first\n");
-	printf("3. Round robin\n");
-	printf("4. Multilevel feedback queue\n");
-	printf("5. Lottery\n");
-	printf("6. QUIT\n");
-	printf("-------------------------------------\n");
-}
-
-void initComponent(Process *processSet, bool **workLoad, int totalServiceTime){
-	//Process 설정 초기화
-	for(int i = 0; i < PROCESS_COUNT; i++){
-		processSet[i].currentServiceTime = 0;
-		processSet[i].accumulatedTime = 0;
-	}
-
-	//workLoad 초기화
-	for(int i = 0; i < PROCESS_COUNT; i++){
-		for(int j = 0; j < totalServiceTime; j++){
-				workLoad[i][j] = false;
 		}
 	}
 }
@@ -379,18 +376,55 @@ void Lottery(Process *processSet, int totalServiceTime, bool **workload){
 	}
 }
 
-void * deQueueInLottery(Queue *queue, Node *pa, Node *ch){
-	if(!pa){
-		queue->front = ch->next;
-		free(ch);
-	}else if(!(ch->next)){
-		queue->rear = pa;
-		pa->next = NULL;
-		free(ch);
-	}else{
-		pa->next = ch->next;
-		free(ch);
-	}
-	queue->count--;
+bool ** createWorkLoad(int totalRunningTime, bool **workLoad){
+	workLoad = (bool**) malloc (sizeof(bool*) * PROCESS_COUNT);
+    for(int i = 0; i < PROCESS_COUNT; i++){
+         workLoad[i] = (bool*) malloc (sizeof(bool) * totalRunningTime);
+         for(int j = 0; j < totalRunningTime; j++){
+			 workLoad[i][j] = false;
+		 }
+    }
+	return workLoad;
+}
 
+void showWorkLoad(int totalRunningTime, bool **workLoad){
+	char processName[PROCESS_COUNT] = {'A', 'B', 'C', 'D', 'E'};
+
+	for(int i = 0; i < PROCESS_COUNT; i++){
+		printf("%c :", processName[i]);
+		for(int j =0; j < totalRunningTime; j++){
+			if(workLoad[i][j] == true){
+				printf(" ■ ");
+			}else{
+				printf(" □ ");
+			}
+		}
+		printf("\n");
+	}
+}
+
+void initComponent(Process *processSet, bool **workLoad, int totalServiceTime){
+	//Process 설정 초기화
+	for(int i = 0; i < PROCESS_COUNT; i++){
+		processSet[i].currentServiceTime = 0;
+		processSet[i].accumulatedTime = 0;
+	}
+
+	//workLoad 초기화
+	for(int i = 0; i < PROCESS_COUNT; i++){
+		for(int j = 0; j < totalServiceTime; j++){
+				workLoad[i][j] = false;
+		}
+	}
+}
+
+void showMenu(void){
+	printf("-------------------------------------\n");
+	printf("1. First come first serve\n");
+	printf("2. Shortest job first\n");
+	printf("3. Round robin\n");
+	printf("4. Multilevel feedback queue\n");
+	printf("5. Lottery\n");
+	printf("6. QUIT\n");
+	printf("-------------------------------------\n");
 }
