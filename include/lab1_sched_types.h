@@ -26,8 +26,8 @@ typedef struct process{
 	int currentServiceTime; // 실제 프로세스 수행 시간
 	int accumulatedTime; // MLFQ에 사용될 누적시간
 	int processId; // processId
-//	int priority; //MLFQ에서 큐 우선순위에 사용할 변수
 	int ticket;	//for rottery scheduler
+	int priority; // MLFQ에서 사용될 우선순위 
 }Process;
 
 typedef struct node{

@@ -98,7 +98,7 @@ void enQueueInSJF(Queue *queue, Process *process){
 	}else{
 		ch = pa->next;
 		for(;ch != NULL;){ //노드가 하나 이상  있을시, 중간에 삽입할 경우
-			if(pa->process->serviceTime < process->serviceTime && ch->process->serviceTime < process->serviceTime){
+			if(pa->process->serviceTime <= process->serviceTime && ch->process->serviceTime <= process->serviceTime){
 				newNode->next = ch;
 				pa->next = newNode;
 				break;
@@ -130,6 +130,7 @@ void enQueueFront(Queue *queue, Process *process){
 
 	if(isEmpty(queue)){
 		queue->front = newNode;
+		queue->rear = newNode;
 	}else{
 		newNode->next = queue->front;
 		queue->front = newNode;
@@ -169,7 +170,6 @@ void * deQueueInLottery(Queue *queue, Node *pa, Node *ch){
 		free(ch);
 	}
 	queue->count--;
-
 }
 
 /*
@@ -215,7 +215,6 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 	int expedNumber = timeSlice;
 	int processIndex = 0;
 	int queueLevel = 4;
-	int processPriority = 0;
 	Process *runningProcess = NULL;
 
 	for(int i = 0; i < queueLevel; i++){
@@ -237,8 +236,8 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 			for(int i = 0; i < queueLevel; i++){
 				runningProcess = deQueue(&multiQueue[i]); // 우선순위가 높은 큐에 있는 잡부터 수행프로세스에 삽입
 			
-				processPriority  = i;
 				if(runningProcess != NULL){ // 러닝프로세스에 들오면 더이상 큐에서 프로세스를 빼지 않음
+					runningProcess -> priority = i;
 					break;
 				}
 			}
@@ -250,15 +249,13 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 		
 		if(runningProcess -> currentServiceTime == runningProcess -> serviceTime){
 			runningProcess = NULL; //프로세스 종료
-		}else if(runningProcess -> accumulatedTime == multiQueue[processPriority].timeSlice){ //아직 수행할 시간이 더 남았음
-			if(isAllEmpty(multiQueue, queueLevel) == false){
-				if( processPriority   != (queueLevel - 1)){
-					printf("gi\n");		
-					processPriority ++;
-					printf("id : %d rpit : %d\n", runningProcess->processId, processPriority );
+		}else if(runningProcess -> accumulatedTime == multiQueue[runningProcess -> priority].timeSlice){ //아직 수행할 시간이 더 남았음
+			if(isAllEmpty(multiQueue, queueLevel) == false || processSet[processIndex].arriveTime == timer){
+				if( runningProcess -> priority != (queueLevel -1)){
+					runningProcess -> priority++;
 				}
 			}
-			enQueueRear(&multiQueue[processPriority], runningProcess);
+			enQueueRear(&multiQueue[runningProcess -> priority], runningProcess);
 			
 			runningProcess -> accumulatedTime = 0;
 			runningProcess = NULL;
@@ -270,7 +267,6 @@ void SJF(Process *processSet, int totalServiceTime, bool **workload){
 	Queue ReadyQ;
 	int index=0; //프로세스 진입 확인
 	Process *RunProc;
-
 
 	initQue(&ReadyQ);
 	
