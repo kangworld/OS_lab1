@@ -102,10 +102,8 @@ void enQueueInSJF(Queue *queue, Process *process){
 			if(pa->process->serviceTime <= process->serviceTime && ch->process->serviceTime <= process->serviceTime){
 				newNode->next = ch;
 				pa->next = newNode;
-				printf("1\n");
 				break;
 			}else{
-				printf("2\n");
 				pa = pa->next;
 				ch = ch->next;
 			}
@@ -114,11 +112,9 @@ void enQueueInSJF(Queue *queue, Process *process){
 				if(queue->rear->process->serviceTime < process->serviceTime){//맨 뒤 삽입
 		                	queue->rear->next = newNode;
 					queue->rear = newNode;
-					printf("3\n");
                   		}else{ //노드가 하나일 경우, 맨 앞 삽입
                           		newNode->next = queue->front;
 					queue->front = newNode;
-					printf("4\n");
 				}
 			}
 	}
@@ -163,19 +159,18 @@ Process * deQueue(Queue *queue){
 }
 
 void * deQueueInLottery(Queue *queue, Node *pa, Node *ch){
-	if(!pa){ //front삭제
+	if(!pa){
 		queue->front = ch->next;
 		free(ch);
-	}else if(!(ch->next)){ //rear삭제
+	}else if(!(ch->next)){
 		queue->rear = pa;
 		pa->next = NULL;
 		free(ch);
-	}else{ //중간 노드 삭제
+	}else{
 		pa->next = ch->next;
 		free(ch);
 	}
 	queue->count--;
-
 }
 
 /*
@@ -221,7 +216,6 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 	int expedNumber = timeSlice;
 	int processIndex = 0;
 	int queueLevel = 4;
-	int processPriority = 0;
 	Process *runningProcess = NULL;
 
 	for(int i = 0; i < queueLevel; i++){
@@ -243,8 +237,8 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 			for(int i = 0; i < queueLevel; i++){
 				runningProcess = deQueue(&multiQueue[i]); // 우선순위가 높은 큐에 있는 잡부터 수행프로세스에 삽입
 			
-				processPriority  = i;
 				if(runningProcess != NULL){ // 러닝프로세스에 들오면 더이상 큐에서 프로세스를 빼지 않음
+					runningProcess -> priority = i;
 					break;
 				}
 			}
@@ -256,15 +250,13 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 		
 		if(runningProcess -> currentServiceTime == runningProcess -> serviceTime){
 			runningProcess = NULL; //프로세스 종료
-		}else if(runningProcess -> accumulatedTime == multiQueue[processPriority].timeSlice){ //아직 수행할 시간이 더 남았음
-			if(isAllEmpty(multiQueue, queueLevel) == false){
-				if( processPriority   != (queueLevel - 1)){
-					printf("gi\n");		
-					processPriority ++;
-					printf("id : %d rpit : %d\n", runningProcess->processId, processPriority );
+		}else if(runningProcess -> accumulatedTime == multiQueue[runningProcess -> priority].timeSlice){ //아직 수행할 시간이 더 남았음
+			if(isAllEmpty(multiQueue, queueLevel) == false || processSet[processIndex].arriveTime == timer){
+				if( runningProcess -> priority != (queueLevel -1)){
+					runningProcess -> priority++;
 				}
 			}
-			enQueueRear(&multiQueue[processPriority], runningProcess);
+			enQueueRear(&multiQueue[runningProcess -> priority], runningProcess);
 			
 			runningProcess -> accumulatedTime = 0;
 			runningProcess = NULL;
@@ -272,18 +264,10 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 	}
 }
 
-/*
- * SJF
- * processSet : 스케쥴링의 대상이 되는 프로세스 집합
- * workLoad : 프로세스들의 수행결과를 저장할 워크로드
- * totalServiceTime : 대기중인 프로세스들의 총 수행시간 
- */
-
 void SJF(Process *processSet, int totalServiceTime, bool **workload){
 	Queue ReadyQ;
 	int index=0; //프로세스 진입 확인
 	Process *RunProc;
-
 
 	initQue(&ReadyQ);
 	
@@ -305,14 +289,6 @@ void SJF(Process *processSet, int totalServiceTime, bool **workload){
 		
 }
 
-/*
- * RR
- * processSet : 스케쥴링의 대상이 되는 프로세스 집합
- * workLoad : 프로세스들의 수행결과를 저장할 워크로드
- * totalServiceTime : 대기중인 프로세스들의 총 수행시간
- * timeSlice : 작업 할당량
- */
-
 void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlice){
 	Queue ReadyQ;
 	int index=0;
@@ -324,12 +300,8 @@ void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlic
 	for(int time=0;time<totalServiceTime;time++){
 		for(;index<PROCESS_COUNT;index++){ //arriveTime에 맞추어 큐에 삽입
 			if(processSet[index].arriveTime == time){
-				enQueueRear(&ReadyQ, &processSet[index]);
+				enQueueFront(&ReadyQ, &processSet[index]);
 			}else break;
-		}
-		if(run == timeSlice){
-			run = 0;
-			enQueueRear(&ReadyQ, RunProc);
 		}
 
 		if(run == 0){
@@ -342,15 +314,9 @@ void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlic
 			run = 0;
 		}
 
+		}
 	}
 }
-
-/*
- * Lottery
- * processSet : 스케쥴링의 대상이 되는 프로세스 집합
- * workLoad : 프로세스들의 수행결과를 저장할 워크로드
- * totalRunningTime : 대기중인 프로세스들의 총 수행시간 
- */
 
 void Lottery(Process *processSet, int totalServiceTime, bool **workload){
 	Queue ReadyQ;

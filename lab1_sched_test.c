@@ -35,7 +35,7 @@
  *
  */
 
-enum scheduler { FIFO = 1, SPN, RRs, MLFQ, LOTTERY, QUIT };
+enum scheduler { FIFO = 1, SPN, R_R, MLFQ, LOTTERY, QUIT };
 
 int main(int argc, char *argv[]){
 	bool **workLoad = NULL;
@@ -43,12 +43,12 @@ int main(int argc, char *argv[]){
 	int totalServiceTime = 0;
 	int selectMenu;
 	Process processSet[PROCESS_COUNT] = {
-		//도착시작, 총 수행시간, 현재 수행시간, 축적시간, 프로세스 아이디, 티켓
-		{ 0, 2, 0, 0 ,0, 10 },
-		{ 0, 7, 0, 0, 1, 30 },
-		{ 5, 10, 0, 0, 2, 20 },
-		{ 7, 3, 0, 0, 3, 50 },
-		{ 9, 3, 0, 0, 4, 70 },
+		//도착시작, 총 수행시간, 현재 수행시간, 축적시간, 프로세스 아이디, 티켓, 우선순위
+		{ 0, 2, 0, 0 ,0, 10, 0 },
+		{ 0, 7, 0, 0, 1, 30, 0 },
+		{ 5, 10, 0, 0, 2, 20, 0 },
+		{ 7, 3, 0, 0, 3, 50, 0 },
+		{ 9, 3, 0, 0, 4, 70, 0 },
 	};
 
 	for(int i = 0; i < 5; i++){
@@ -71,12 +71,12 @@ int main(int argc, char *argv[]){
 				SJF(processSet, totalServiceTime, workLoad);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
-			case RRs :
-				RR(processSet, totalServiceTime, workLoad, 2);
+			case R_R :
+				RR(processSet, totalServiceTime, workLoad, 1);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case MLFQ :
-				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 2, true);
+				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 1, false);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case LOTTERY :
