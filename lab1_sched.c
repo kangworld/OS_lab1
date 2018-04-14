@@ -332,17 +332,14 @@ void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlic
 			enQueueRear(&ReadyQ, RunProc);
 		}
 
-		printf("time : %d\n", time);
 		if(run == 0){
 			RunProc = deQueue(&ReadyQ);
 		}
-		printf("1\n");
 		(RunProc->currentServiceTime)++;
 		workload[RunProc->processId][time] = true;
 		run++;
 		if(RunProc->currentServiceTime == RunProc->serviceTime){ //수행이 덜 
 			run = 0;
-			printf("2\n");
 		}
 
 	}
