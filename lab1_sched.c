@@ -77,6 +77,7 @@ void enQueueRear(Queue *queue, Process *process){
 
 	if(isEmpty(queue)){
 		queue->front = newNode;
+		queue->rear = newNode;
 	}else{
 		queue->rear->next = newNode;
 	}
@@ -98,11 +99,13 @@ void enQueueInSJF(Queue *queue, Process *process){
 	}else{
 		ch = pa->next;
 		for(;ch != NULL;){ //노드가 하나 이상  있을시, 중간에 삽입할 경우
-			if(pa->process->serviceTime < process->serviceTime && ch->process->serviceTime < process->serviceTime){
+			if(pa->process->serviceTime <= process->serviceTime && ch->process->serviceTime <= process->serviceTime){
 				newNode->next = ch;
 				pa->next = newNode;
+				printf("1\n");
 				break;
 			}else{
+				printf("2\n");
 				pa = pa->next;
 				ch = ch->next;
 			}
@@ -111,9 +114,11 @@ void enQueueInSJF(Queue *queue, Process *process){
 				if(queue->rear->process->serviceTime < process->serviceTime){//맨 뒤 삽입
 		                	queue->rear->next = newNode;
 					queue->rear = newNode;
+					printf("3\n");
                   		}else{ //노드가 하나일 경우, 맨 앞 삽입
                           		newNode->next = queue->front;
 					queue->front = newNode;
+					printf("4\n");
 				}
 			}
 	}
@@ -130,6 +135,7 @@ void enQueueFront(Queue *queue, Process *process){
 
 	if(isEmpty(queue)){
 		queue->front = newNode;
+		queue->rear = newNode;
 	}else{
 		newNode->next = queue->front;
 		queue->front = newNode;
@@ -157,14 +163,14 @@ Process * deQueue(Queue *queue){
 }
 
 void * deQueueInLottery(Queue *queue, Node *pa, Node *ch){
-	if(!pa){
+	if(!pa){ //front삭제
 		queue->front = ch->next;
 		free(ch);
-	}else if(!(ch->next)){
+	}else if(!(ch->next)){ //rear삭제
 		queue->rear = pa;
 		pa->next = NULL;
 		free(ch);
-	}else{
+	}else{ //중간 노드 삭제
 		pa->next = ch->next;
 		free(ch);
 	}
@@ -303,28 +309,27 @@ void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlic
 	for(int time=0;time<totalServiceTime;time++){
 		for(;index<PROCESS_COUNT;index++){ //arriveTime에 맞추어 큐에 삽입
 			if(processSet[index].arriveTime == time){
-				enQueueFront(&ReadyQ, &processSet[index]);
+				enQueueRear(&ReadyQ, &processSet[index]);
 			}else break;
 		}
-
-		if(!isEmpty(&ReadyQ)){ //ReadyQ에 따라 실행
-			RunProc = ReadyQ.front->process;
-			(RunProc->currentServiceTime)++;
-			workload[RunProc->processId][time] = true;
-			run++;
-			if(RunProc->currentServiceTime < RunProc->serviceTime){ //수행이 덜 
-				RunProc = NULL;
-				if(run == timeSlice){ //timeSlice까지 실행
-					run = 0;
-					RunProc = deQueue(&ReadyQ);
-					enQueueRear(&ReadyQ, RunProc);
-				}
-			}else{ //수행완료
-				run = 0;
-				deQueue(&ReadyQ);
-			}
-
+		if(run == timeSlice){
+			run = 0;
+			enQueueRear(&ReadyQ, RunProc);
 		}
+
+		printf("time : %d\n", time);
+		if(run == 0){
+			RunProc = deQueue(&ReadyQ);
+		}
+		printf("1\n");
+		(RunProc->currentServiceTime)++;
+		workload[RunProc->processId][time] = true;
+		run++;
+		if(RunProc->currentServiceTime == RunProc->serviceTime){ //수행이 덜 
+			run = 0;
+			printf("2\n");
+		}
+
 	}
 }
 

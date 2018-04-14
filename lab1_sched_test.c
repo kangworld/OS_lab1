@@ -44,11 +44,11 @@ int main(int argc, char *argv[]){
 	int selectMenu;
 	Process processSet[PROCESS_COUNT] = {
 		//도착시작, 총 수행시간, 현재 수행시간, 축적시간, 프로세스 아이디, 티켓
-		{ 0, 3, 0, 0 ,0, 10 },
-		{ 2, 6, 0, 0, 1, 30 },
-		{ 4, 4, 0, 0, 2, 20 },
-		{ 6, 5, 0, 0, 3, 50 },
-		{ 8, 2, 0, 0, 4, 70 },
+		{ 0, 5, 0, 0 ,0, 10 },
+		{ 1, 4, 0, 0, 1, 30 },
+		{ 1, 4, 0, 0, 2, 20 },
+		{ 2, 3, 0, 0, 3, 50 },
+		{ 5, 4, 0, 0, 4, 70 },
 	};
 
 	for(int i = 0; i < 5; i++){
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case RRs :
-				RR(processSet, totalServiceTime, workLoad, 2);
+				RR(processSet, totalServiceTime, workLoad, 4);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case MLFQ :
