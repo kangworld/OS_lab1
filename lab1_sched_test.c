@@ -72,11 +72,11 @@ int main(int argc, char *argv[]){
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case R_R :
-				RR(processSet, totalServiceTime, workLoad, 1);
+				RR(processSet, totalServiceTime, workLoad, 2);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case MLFQ :
-				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 1, false);
+				multilevelFeedbackQueue(processSet, workLoad, totalServiceTime, 2, false);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case LOTTERY :

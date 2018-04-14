@@ -300,8 +300,12 @@ void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlic
 	for(int time=0;time<totalServiceTime;time++){
 		for(;index<PROCESS_COUNT;index++){ //arriveTime에 맞추어 큐에 삽입
 			if(processSet[index].arriveTime == time){
-				enQueueFront(&ReadyQ, &processSet[index]);
+				enQueueRear(&ReadyQ, &processSet[index]);
 			}else break;
+		}
+		if(run == timeSlice){
+			run = 0;
+			enQueueRear(&ReadyQ, RunProc);
 		}
 
 		if(run == 0){
@@ -312,8 +316,6 @@ void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlic
 		run++;
 		if(RunProc->currentServiceTime == RunProc->serviceTime){ //수행이 덜 
 			run = 0;
-		}
-
 		}
 	}
 }
