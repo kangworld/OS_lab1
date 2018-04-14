@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case RRs :
-				RR(processSet, totalServiceTime, workLoad, 4);
+				RR(processSet, totalServiceTime, workLoad, 3);
 				showWorkLoad(totalServiceTime, workLoad);
 				break;
 			case MLFQ :

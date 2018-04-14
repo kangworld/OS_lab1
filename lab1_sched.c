@@ -272,6 +272,13 @@ void multilevelFeedbackQueue(Process *processSet, bool **workLoad, int totalRunn
 	}
 }
 
+/*
+ * SJF
+ * processSet : 스케쥴링의 대상이 되는 프로세스 집합
+ * workLoad : 프로세스들의 수행결과를 저장할 워크로드
+ * totalServiceTime : 대기중인 프로세스들의 총 수행시간 
+ */
+
 void SJF(Process *processSet, int totalServiceTime, bool **workload){
 	Queue ReadyQ;
 	int index=0; //프로세스 진입 확인
@@ -297,6 +304,14 @@ void SJF(Process *processSet, int totalServiceTime, bool **workload){
 	}
 		
 }
+
+/*
+ * RR
+ * processSet : 스케쥴링의 대상이 되는 프로세스 집합
+ * workLoad : 프로세스들의 수행결과를 저장할 워크로드
+ * totalServiceTime : 대기중인 프로세스들의 총 수행시간
+ * timeSlice : 작업 할당량
+ */
 
 void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlice){
 	Queue ReadyQ;
@@ -332,6 +347,13 @@ void RR(Process *processSet, int totalServiceTime, bool **workload, int timeSlic
 
 	}
 }
+
+/*
+ * Lottery
+ * processSet : 스케쥴링의 대상이 되는 프로세스 집합
+ * workLoad : 프로세스들의 수행결과를 저장할 워크로드
+ * totalRunningTime : 대기중인 프로세스들의 총 수행시간 
+ */
 
 void Lottery(Process *processSet, int totalServiceTime, bool **workload){
 	Queue ReadyQ;
